@@ -1,0 +1,38 @@
+services:
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    
+  llama-server:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    container_name: llama-gemma   
+    ports:  
+      - "50000:50000"
+    volumes:
+      - /mnt/c/Users/ASUS/.cache/huggingface:/root/.cache/huggingface
+    command: >
+      -hf unsloth/gemma-4-E2B-it-GGUF 
+      --port 50000 
+      --host 0.0.0.0
+      --metrics
+      -c 4096 
+      -np 5
+    restart: unless-stopped
+
+volumes:
+  grafana-storage:
+  prometheus-data:
