@@ -11,11 +11,21 @@ logger = logging.getLogger(__name__)
 class BenchmarkRunner:
     """Orchestrates concurrent LLM requests and captures metrics."""
 
-    def __init__(self, engine: BaseInferenceEngine, tokenizer_name: str = "cl100k_base"):
+    def __init__(
+        self, 
+        engine: BaseInferenceEngine, 
+        tokenizer_name: str = "o200k_base"
+    ):
         self.engine = engine
-        self.tokenizer = tiktoken.get_encoding(tokenizer_name)
+        self.tokenizer = tiktoken.get_encoding(
+            tokenizer_name
+        )
 
-    async def _run_single(self, prompt: str, **kwargs) -> RequestMetrics:
+    async def _run_single(
+        self, 
+        prompt: str, 
+        **kwargs
+    ) -> RequestMetrics:
         start_time = time.perf_counter()
         first_token_time = None
         full_text = ""
@@ -23,13 +33,18 @@ class BenchmarkRunner:
         error_msg = None
 
         try:
-            async for chunk in self.engine.stream_inference(prompt, **kwargs):
+            async for chunk in self.engine.stream_inference(
+                prompt, 
+                **kwargs
+            ):
                 if first_token_time is None and chunk:
                     first_token_time = time.perf_counter()
                 full_text += chunk
             success = True
         except Exception as e:
-            logger.error(f"Request failed for {self.engine.get_engine_name()}: {e}")
+            logger.error(
+                f"Request failed for {self.engine.get_engine_name()}: {e}"
+            )
             error_msg = str(e)
 
         end_time = time.perf_counter()
@@ -55,8 +70,19 @@ class BenchmarkRunner:
             error=error_msg
         )
 
-    async def run_concurrent(self, prompt: str, concurrency: int, **kwargs) -> List[RequestMetrics]:
+    async def run_concurrent(
+        self, 
+        prompt: str, 
+        concurrency: int, 
+        **kwargs
+    ) -> List[RequestMetrics]:
         """Runs the benchmark with the specified number of concurrent users."""
-        logger.info(f"Launching {concurrency} concurrent requests to {self.engine.get_engine_name()}")
-        tasks = [self._run_single(prompt, **kwargs) for _ in range(concurrency)]
+        logger.info(
+            f"Launching {concurrency} concurrent requests to {self.engine.get_engine_name()}"
+        )
+        tasks = [
+            self._run_single(prompt, **kwargs) 
+            for _ in range(concurrency)
+        ]
+        
         return await asyncio.gather(*tasks)

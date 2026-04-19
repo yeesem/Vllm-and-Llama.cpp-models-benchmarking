@@ -9,8 +9,13 @@ class LlamaCppEngine(BaseInferenceEngine):
     def get_engine_name(self) -> str:
         return "LlamaCpp"
 
-    async def stream_inference(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]:
+    async def stream_inference(
+        self, 
+        prompt: str, 
+        **kwargs
+    ) -> AsyncGenerator[str, None]:
         url = f"{self.endpoint_url}/completion"
+
         payload = {
             "prompt": prompt,
             "stream": True,
@@ -19,10 +24,16 @@ class LlamaCppEngine(BaseInferenceEngine):
         }
 
         async with httpx.AsyncClient(timeout=60.0) as client:
-            async with client.stream("POST", url, json=payload) as response:
+            async with client.stream(
+                "POST", 
+                url, 
+                json=payload
+            ) as response:
                 if response.status_code != 200:
                     error_body = await response.aread()
-                    raise RuntimeError(f"Llama.cpp API Error {response.status_code}: {error_body.decode()}")
+                    raise RuntimeError(
+                        f"Llama.cpp API Error {response.status_code}: {error_body.decode()}"
+                    )
 
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):

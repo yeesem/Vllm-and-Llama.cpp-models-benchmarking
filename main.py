@@ -13,8 +13,8 @@ PROMPT = "Write a comprehensive 500-word essay about the history of artificial i
 VLLM_URL = "http://localhost:8000"
 VLLM_MODEL = "facebook/opt-125m"
 LLAMACPP_URL = "http://localhost:8080"
-OUTPUT_CSV = "benchmark_results.csv"
-OUTPUT_JSON = "benchmark_results.json"
+OUTPUT_CSV = "results/benchmark_results.csv"
+OUTPUT_JSON = "results/benchmark_results.json"
 
 # Setup logging
 logging.basicConfig(
@@ -27,17 +27,28 @@ logger = logging.getLogger(__name__)
 async def run_benchmark():
     # Example: Select the engine to test (could be parameter driven)
     # engine = VLLMEngine(endpoint_url=VLLM_URL, model_name=VLLM_MODEL)
-    engine = LlamaCppEngine(endpoint_url=LLAMACPP_URL)
+    engine = LlamaCppEngine(
+        endpoint_url=LLAMACPP_URL
+    )
     
     runner = BenchmarkRunner(engine)
     all_aggregated_metrics: List[AggregatedMetrics] = []
 
-    logger.info(f"Starting LLM Benchmark Suite for engine: {engine.get_engine_name()}")
+    logger.info(
+        f"Starting LLM Benchmark Suite for engine: {engine.get_engine_name()}"
+    )
     
     for concurrency in CONCURRENCY_LEVELS:
-        results = await runner.run_concurrent(PROMPT, concurrency, max_tokens=512)
+        results = await runner.run_concurrent(
+            PROMPT, 
+            concurrency, max_tokens=2046
+        )
         
-        aggregated = aggregate_results(engine.get_engine_name(), concurrency, results)
+        aggregated = aggregate_results(
+            engine.get_engine_name(), 
+            concurrency, 
+            results
+        )
         all_aggregated_metrics.append(aggregated)
         
         # Immediate console reporting
@@ -49,7 +60,6 @@ async def run_benchmark():
         logger.info(f"P95 TPS: {aggregated.p95_tps:.2f} tokens/s")
         logger.info("-" * 30)
 
-    # Save results to files
     save_to_csv(OUTPUT_CSV, all_aggregated_metrics)
     save_to_json(OUTPUT_JSON, all_aggregated_metrics)
     logger.info(f"Benchmark complete. Results saved to {OUTPUT_CSV} and {OUTPUT_JSON}")

@@ -9,7 +9,11 @@ class VLLMEngine(BaseInferenceEngine):
     def get_engine_name(self) -> str:
         return "vLLM"
 
-    async def stream_inference(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]:
+    async def stream_inference(
+        self, 
+        prompt: str, 
+        **kwargs
+    ) -> AsyncGenerator[str, None]:
         url = f"{self.endpoint_url}/v1/completions"
         payload = {
             "model": self.model_name,

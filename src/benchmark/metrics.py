@@ -31,7 +31,11 @@ class AggregatedMetrics:
     total_requests: int
     success_rate: float
 
-def aggregate_results(engine: str, concurrency: int, results: List[RequestMetrics]) -> AggregatedMetrics:
+def aggregate_results(
+    engine: str, 
+    concurrency: int, 
+    results: List[RequestMetrics]
+) -> AggregatedMetrics:
     successful_results = [r for r in results if r.success]
     total = len(results)
     success_count = len(successful_results)
@@ -50,7 +54,13 @@ def aggregate_results(engine: str, concurrency: int, results: List[RequestMetric
 
     def get_percentile(data, p):
         if not data: return 0.0
-        idx = max(0, min(len(data) - 1, int(len(data) * p / 100)))
+        idx = max(
+            0, 
+            min(
+                len(data) - 1, 
+                int(len(data) * p / 100)
+            )
+        )
         return data[idx]
 
     return AggregatedMetrics(
@@ -68,7 +78,10 @@ def aggregate_results(engine: str, concurrency: int, results: List[RequestMetric
         success_rate=success_rate
     )
 
-def save_to_csv(filepath: str, metrics: List[AggregatedMetrics]):
+def save_to_csv(
+    filepath: str, 
+    metrics: List[AggregatedMetrics]
+):
     if not metrics:
         return
     keys = metrics[0].__dict__.keys()
@@ -77,6 +90,15 @@ def save_to_csv(filepath: str, metrics: List[AggregatedMetrics]):
         dict_writer.writeheader()
         dict_writer.writerows([asdict(m) for m in metrics])
 
-def save_to_json(filepath: str, metrics: List[AggregatedMetrics]):
+def save_to_json(
+    filepath: str, 
+    metrics: List[AggregatedMetrics]
+):
     with open(filepath, "w") as f:
-        json.dump([asdict(m) for m in metrics], f, indent=2)
+        json.dump(
+            [
+                asdict(m) for m in metrics
+            ], 
+            f, 
+            indent=2
+        )
