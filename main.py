@@ -12,7 +12,7 @@ CONCURRENCY_LEVELS = [1, 5, 10, 20]
 PROMPT = "Write a comprehensive 500-word essay about the history of artificial intelligence."
 VLLM_URL = "http://localhost:8000"
 VLLM_MODEL = "facebook/opt-125m"
-LLAMACPP_URL = "http://localhost:8080"
+LLAMACPP_URL = "http://localhost:50000"
 OUTPUT_CSV = "results/benchmark_results.csv"
 OUTPUT_JSON = "results/benchmark_results.json"
 

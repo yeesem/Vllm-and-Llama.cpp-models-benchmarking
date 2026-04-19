@@ -17,21 +17,51 @@ services:
       - prometheus-data:/prometheus
     restart: unless-stopped
     
-  llama-server:
-    image: ghcr.io/ggml-org/llama.cpp:server
-    container_name: llama-gemma   
-    ports:  
-      - "50000:50000"
+  # llama-server:
+  #   image: ghcr.io/ggml-org/llama.cpp:server
+  #   container_name: llama-gemma   
+  #   ports:  
+  #     - "50000:50000"
+  #   volumes:
+  #     - /mnt/c/Users/ASUS/.cache/huggingface:/root/.cache/huggingface
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   command: >
+  #     -hf unsloth/gemma-4-E2B-it-GGUF 
+  #     --port 50000 
+  #     --host 0.0.0.0
+  #     --metrics
+  #     -c 4096 
+  #     -np 5
+  #   restart: unless-stopped
+
+  vllm-server:
+    image: vllm/vllm-openai:gemma4
+    container_name: vllm-gemma4
+    ipc: host
+    network_mode: host
+    shm_size: '16gb'
     volumes:
-      - /mnt/c/Users/ASUS/.cache/huggingface:/root/.cache/huggingface
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     command: >
-      -hf unsloth/gemma-4-E2B-it-GGUF 
-      --port 50000 
+      --model gemma-4-E2B-it
+      --tensor-parallel-size 1
+      --max-model-len 4096
+      --gpu-memory-utilization 0.90
       --host 0.0.0.0
-      --metrics
-      -c 4096 
-      -np 5
-    restart: unless-stopped
+      --port 50001
 
 volumes:
   grafana-storage:
